@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# shellcheck disable=SC2220
+# shellcheck disable=SC1090,SC2220
 
 while getopts "b:c:df:s:t:" opt; do
   case $opt in

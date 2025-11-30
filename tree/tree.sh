@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+#
+# shellcheck disable=SC1090,SC2220
 
 while getopts "b:c:df:s:t:" opt; do
   case $opt in
@@ -66,9 +68,9 @@ for t in $(seq 0 $((tree_length - 1))); do
       echo -e "\n[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
 
       if [[ "${rclone_dryrun}" = true ]]; then
-        ${RCLONE_BIN} ${RCLONE_TRANSFER} --dry-run ${trunk}:${leaf} ${branch}:${leaf}
+        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run "${trunk}:${leaf}" "${branch}:${leaf}"
       else
-        ${RCLONE_BIN} ${RCLONE_TRANSFER} ${trunk}:${leaf} ${branch}:${leaf}
+        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" "${trunk}:${leaf}" "${branch}:${leaf}"
       fi
 
     done
