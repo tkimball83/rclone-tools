@@ -6,7 +6,7 @@ import re
 import sys
 
 EXCLUSION_PATTERN = re.compile(
-    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased)\)',
+    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased)\)|\bBIOS\b',
     re.IGNORECASE
 )
 
