@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat)](COPYING)
 
-A yaml controlled bash script to sync between multiple remotes
+A yaml controlled bash script to sync between multiple rclone remotes
 
 ## Usage
 
