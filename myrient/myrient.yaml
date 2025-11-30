@@ -3,9 +3,9 @@ myrient:
   - name: atari2600
     destination: roms/atari2600
     sources:
-      - myrient-http:/files/No-Intro/Atari - Atari 2600
-      - myrient-http:/files/No-Intro/Atari - Atari 2600 (Aftermarket)
-      - myrient-http:/files/No-Intro/Atari - Atari 2600 (Private)
+      - myrient:/files/No-Intro/Atari - Atari 2600
+      - myrient:/files/No-Intro/Atari - Atari 2600 (Aftermarket)
+      - myrient:/files/No-Intro/Atari - Atari 2600 (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -14,8 +14,8 @@ myrient:
   - name: gamegear
     destination: roms/gamegear
     sources:
-      - myrient-http:/files/No-Intro/Sega - Game Gear
-      - myrient-http:/files/No-Intro/Sega - Game Gear (Aftermarket)
+      - myrient:/files/No-Intro/Sega - Game Gear
+      - myrient:/files/No-Intro/Sega - Game Gear (Aftermarket)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -24,9 +24,9 @@ myrient:
   - name: genesis
     destination: roms/genesis
     sources:
-      - myrient-http:/files/No-Intro/Sega - Mega Drive - Genesis
-      - myrient-http:/files/No-Intro/Sega - Mega Drive - Genesis (Aftermarket)
-      - myrient-http:/files/No-Intro/Sega - Mega Drive - Genesis (Private)
+      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis
+      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis (Aftermarket)
+      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -35,9 +35,9 @@ myrient:
   - name: gb
     destination: roms/gb
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy (Private)
+      - myrient:/files/No-Intro/Nintendo - Game Boy
+      - myrient:/files/No-Intro/Nintendo - Game Boy (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Game Boy (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -46,9 +46,9 @@ myrient:
   - name: gba
     destination: roms/gba
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy Advance
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy Advance (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy Advance (Private)
+      - myrient:/files/No-Intro/Nintendo - Game Boy Advance
+      - myrient:/files/No-Intro/Nintendo - Game Boy Advance (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Game Boy Advance (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -57,9 +57,9 @@ myrient:
   - name: gbc
     destination: roms/gbc
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy Color
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy Color (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Game Boy Color (Private)
+      - myrient:/files/No-Intro/Nintendo - Game Boy Color
+      - myrient:/files/No-Intro/Nintendo - Game Boy Color (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Game Boy Color (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -68,10 +68,10 @@ myrient:
   - name: nds
     destination: roms/nds
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo DS (Decrypted)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo DS (Decrypted) (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo DS (Decrypted) (Private)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo DSi (Decrypted)
+      - myrient:/files/No-Intro/Nintendo - Nintendo DS (Decrypted)
+      - myrient:/files/No-Intro/Nintendo - Nintendo DS (Decrypted) (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Nintendo DS (Decrypted) (Private)
+      - myrient:/files/No-Intro/Nintendo - Nintendo DSi (Decrypted)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -80,9 +80,9 @@ myrient:
   - name: nes
     destination: roms/nes
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Private)
+      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered)
+      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -91,9 +91,9 @@ myrient:
   - name: n64
     destination: roms/n64
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian) (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian) (Private)
+      - myrient:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian)
+      - myrient:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian) (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian) (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -102,7 +102,7 @@ myrient:
   - name: psx
     destination: roms/psx
     sources:
-      - myrient-http:/files/Redump/Sony - PlayStation
+      - myrient:/files/Redump/Sony - PlayStation
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -111,9 +111,9 @@ myrient:
   - name: snes
     destination: roms/snes
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Super Nintendo Entertainment System
-      - myrient-http:/files/No-Intro/Nintendo - Super Nintendo Entertainment System (Aftermarket)
-      - myrient-http:/files/No-Intro/Nintendo - Super Nintendo Entertainment System (Private)
+      - myrient:/files/No-Intro/Nintendo - Super Nintendo Entertainment System
+      - myrient:/files/No-Intro/Nintendo - Super Nintendo Entertainment System (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Super Nintendo Entertainment System (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -122,7 +122,7 @@ myrient:
   - name: xbox
     destination: roms/xbox
     sources:
-      - myrient-http:/files/Redump/Microsoft - Xbox
+      - myrient:/files/Redump/Microsoft - Xbox
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -131,7 +131,7 @@ myrient:
   - name: xbox360
     destination: roms/xbox360
     sources:
-      - myrient-http:/files/Redump/Microsoft - Xbox 360
+      - myrient:/files/Redump/Microsoft - Xbox 360
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -140,8 +140,8 @@ myrient:
   - name: 3ds
     destination: roms/3ds
     sources:
-      - myrient-http:/files/No-Intro/Nintendo - Nintendo 3DS (Decrypted)
-      - myrient-http:/files/No-Intro/Nintendo - New Nintendo 3DS (Decrypted)
+      - myrient:/files/No-Intro/Nintendo - Nintendo 3DS (Decrypted)
+      - myrient:/files/No-Intro/Nintendo - New Nintendo 3DS (Decrypted)
     options:
       - --checkers 32
       - --multi-thread-streams 0
