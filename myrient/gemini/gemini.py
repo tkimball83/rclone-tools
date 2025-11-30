@@ -3,7 +3,6 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-from typing import List, Optional
 import sys
 
 EXCLUSION_PATTERN = re.compile(
@@ -84,7 +83,6 @@ def fetch_and_filter_file_list(url):
 
         title_match = TITLE_EXTRACTION_PATTERN.search(filename)
 
-        # Rewritten from a single-line conditional assignment to a standard if/else block
         if title_match:
             normalized_title = title_match.group(1).strip().lower()
         else:
@@ -107,15 +105,40 @@ def fetch_and_filter_file_list(url):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Error: Please provide the target URL as a command-line argument.")
-        print(f"Usage: python {sys.argv[0]} <URL>")
+        print("Error: Please provide at least one target URL as a command-line argument.")
+        print(f"Usage: python {sys.argv[0]} <URL_1> [URL_2] [URL_N...]")
         sys.exit(1)
 
-    target_url = sys.argv[1]
+    target_urls = sys.argv[1:]
+    all_best_games = {}
 
-    cleaned_list = fetch_and_filter_file_list(target_url)
+    for url in target_urls:
+        current_list = fetch_and_filter_file_list(url)
 
-    if cleaned_list:
-        for item in cleaned_list:
+        for filename in current_list:
+
+            title_match = TITLE_EXTRACTION_PATTERN.search(filename)
+
+            if title_match:
+                normalized_title = title_match.group(1).strip().lower()
+            else:
+                normalized_title = filename.split('(')[0].strip().lower()
+
+            if not normalized_title:
+                continue
+
+            if normalized_title in all_best_games:
+                current_best_filename = all_best_games[normalized_title]
+
+                updated_best = compare_files(current_best_filename, filename)
+                all_best_games[normalized_title] = updated_best
+            else:
+                all_best_games[normalized_title] = filename
+
+    final_list = list(all_best_games.values())
+    final_list.sort()
+
+    if final_list:
+        for item in final_list:
             print(f"+ {item}")
         print('- *')
