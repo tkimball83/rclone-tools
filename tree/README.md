@@ -22,6 +22,8 @@ A yaml controlled bash script to sync between multiple remotes
 ## Examples
 
     bash tree.sh -d
+    bash tree.sh -b ~/.local/bin/rclone -c ~/.config/rclone/rclone.conf
+    bash tree.sh -s /opt/homebrew/bin/shyaml
 
 ## License
 

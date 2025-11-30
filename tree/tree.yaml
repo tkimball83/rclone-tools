@@ -1,4 +1,5 @@
-rclone_tree:
+---
+tree:
   - trunk: mega-crypt
     branches:
       - name: filen-crypt

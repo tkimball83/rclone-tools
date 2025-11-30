@@ -28,7 +28,7 @@ for i in ../lib/*; do
   source "${i}"
 done
 
-tree_length=$(get_length rclone_tree)
+tree_length=$(get_length tree)
 
 if [[ -z "${tree_length}" ]] || [[ ! "${tree_length}" -gt 0 ]]; then
   echo "ERROR: The rclone tree list is empty, exiting."
@@ -37,8 +37,8 @@ fi
 
 for t in $(seq 0 $((tree_length - 1))); do
 
-  trunk=$(get_value "rclone_tree.${t}.trunk")
-  branch_length=$(get_length "rclone_tree.${t}.branches")
+  trunk=$(get_value "tree.${t}.trunk")
+  branch_length=$(get_length "tree.${t}.branches")
 
   if [[ -z "${branch_length}" ]] || [[ ! "${branch_length}" -gt 0 ]]; then
     echo "WARNING: The rclone tree has no branches, skipping."
@@ -47,8 +47,8 @@ for t in $(seq 0 $((tree_length - 1))); do
 
   for b in $(seq 0 $((branch_length -1))); do
 
-    branch=$(get_value "rclone_tree.${t}.branches.${b}.name")
-    leaf_length=$(get_length "rclone_tree.${t}.branches.${b}.leafs")
+    branch=$(get_value "tree.${t}.branches.${b}.name")
+    leaf_length=$(get_length "tree.${t}.branches.${b}.leafs")
 
     if [[ -z "${branch}" ]]; then
       echo "WARNING: the rclone branch has no name, skipping."
@@ -61,7 +61,7 @@ for t in $(seq 0 $((tree_length - 1))); do
     fi
 
     for l in $(seq 0 $((leaf_length - 1))); do
-      leaf=$(get_value "rclone_tree.${t}.branches.${b}.leafs.${l}")
+      leaf=$(get_value "tree.${t}.branches.${b}.leafs.${l}")
 
       echo -e "\n[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
 
