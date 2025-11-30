@@ -45,7 +45,7 @@ for t in $(seq 0 $((tree_length - 1))); do
     continue
   fi
 
-  for b in $(seq 0 $((branch_length -1))); do
+  for b in $(seq 0 $((branch_length - 1))); do
 
     branch=$(get_value "tree.${t}.branches.${b}.name")
     leaf_length=$(get_length "tree.${t}.branches.${b}.leafs")
