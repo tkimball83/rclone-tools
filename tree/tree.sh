@@ -42,6 +42,11 @@ for t in $(seq 0 $((tree_length - 1))); do
   trunk=$(get_value "tree.${t}.trunk")
   branch_length=$(get_length "tree.${t}.branches")
 
+  if [[ -z "${trunk}" ]]; then
+    echo "WARNING: The rclone trunk is not defined, skipping."
+    continue
+  fi
+
   if [[ -z "${branch_length}" ]] || [[ ! "${branch_length}" -gt 0 ]]; then
     echo "WARNING: The rclone tree has no branches, skipping."
     continue
@@ -63,6 +68,7 @@ for t in $(seq 0 $((tree_length - 1))); do
     fi
 
     for l in $(seq 0 $((leaf_length - 1))); do
+
       leaf=$(get_value "tree.${t}.branches.${b}.leafs.${l}")
 
       echo -e "\n[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
