@@ -1,0 +1,38 @@
+rclone_tree:
+  - trunk: mega-crypt
+    branches:
+      - name: filen-crypt
+        leafs:
+          - Documents
+          - Games
+          - Movies
+          - Music
+          - Pictures
+          - Videos
+
+  - trunk: mega-crypt
+    branches:
+      - name: filelu-crypt
+        leafs:
+          - Documents
+          - Games
+          - Music
+          - Pictures
+          - Videos
+      - name: koofr-crypt
+        leafs:
+          - Documents
+          - Games
+          - Music
+          - Pictures
+          - Videos
+
+  - trunk: mega-crypt
+    branches:
+      - name: pcloud-na-crypt
+        leafs:
+          - Movies
+      - name: pcloud-eu-crypt
+        leafs:
+          - Movies
+...

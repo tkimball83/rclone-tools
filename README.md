@@ -1,8 +1,8 @@
-# rclone-myrient
+# rclone-tools
 
 [![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat)](COPYING)
 
-A yaml controlled bash script to copy roms from myrient via rclone with custom filters
+A set yaml controlled bash scripts for use with rclone
 
 ## Requirements
 
@@ -11,30 +11,9 @@ A yaml controlled bash script to copy roms from myrient via rclone with custom f
 | [rclone](https://github.com/rclone/rclone) | rsync for cloud storage   |
 | [shyaml](https://github.com/0k/shyaml)     | YAML for the command line |
 
-## Usage
-
-    bash rclone-myrient.sh [options]
-
-## Options
-
-| Flag | Default                   | Description                         |
-| ---- | ------------------------- | ----------------------------------- |
-| `-b` | `/usr/bin/rclone`         | Change path to rclone binary        |
-| `-c` | `/etc/rclone/rclone.conf` | Change path to rclone config        |
-| `-d` | `false`                   | Enable debugging output             |
-| `-f` | `rclone-myrient.yaml`     | Change path to script config yaml   |
-| `-s` | `/usr/bin/shyaml`         | Change path to shyaml binary        |
-| `-t` | `copy`                    | Change rclone transfer mechanism    |
-
-## Examples
-
-    bash rclone-myrient.sh -d
-    bash rclone-myrient.sh -b ~/.local/bin/rclona -c ~/.config/rclone/rclone.conf
-    bash rclone-myrient.sh -s /opt/homebrew/bin/shyaml
-
 ## License
 
-Copyright (C) 2025 Taylor Kimball
+Copyright (c) Taylor Kimball
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

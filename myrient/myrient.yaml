@@ -1,5 +1,5 @@
 ---
-rclone_myrient:
+myrient:
   - name: atari2600
     destination: roms/atari2600
     sources:
