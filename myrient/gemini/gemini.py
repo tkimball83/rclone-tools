@@ -11,7 +11,6 @@ class FileSelector:
     DATE_EXTRACTION_PATTERN = re.compile(r'\(\s*(\d{4}-\d{2}-\d{2})\s*\)', re.IGNORECASE)
     TITLE_EXTRACTION_PATTERN = re.compile(r'(.+?)\s*(?:\[|\(|{)', re.IGNORECASE)
     LANGUAGE_PATTERN = re.compile(r'[\[\(][^\]\)]*En[^\]\)]*[\]\)]', re.IGNORECASE)
-    # FIX: Added support for (N of X) format (e.g., (1 of 2))
     DISC_EXTRACTION_PATTERN = re.compile(r'(\(\s*Disc\s+\d+\s*\))|(\(\s*Part\s+\d+\s*\))|(\(\s*\d+\s+of\s+\d+\s*\))', re.IGNORECASE)
 
     EXCLUSION_KEYWORDS = [
@@ -49,23 +48,23 @@ class FileSelector:
         match = self.REVISION_EXTRACTION_PATTERN.search(filename)
         if match:
             rev_str = match.group(1)
-            
+
             try:
                 parts = rev_str.split('.')
-                
+
                 base_number_str = parts[0]
                 decimal_part_str = ""
-                
+
                 if len(parts) > 1:
                     decimal_part_str = "".join(parts[1:])
-                
+
                 trailing_letter_value = 0
                 if decimal_part_str and decimal_part_str[-1].isalpha():
                     trailing_letter = decimal_part_str[-1]
                     trailing_letter_value = (ord(trailing_letter.lower()) - ord('a') + 1) * 0.00001
                     decimal_part_str = decimal_part_str[:-1]
 
-                
+
                 if decimal_part_str:
                     rev_value = float(f"{base_number_str}.{decimal_part_str}") + trailing_letter_value
                 else:
@@ -73,15 +72,15 @@ class FileSelector:
 
             except ValueError:
                 pass
-        
+
         return (date_value, rev_value)
 
     def _get_comparison_tuple(self, filename: str) -> Tuple[int, int, float, float, int, int]:
         filename_upper = filename.upper()
-        
+
         is_usa = bool(self.USA_REGION_PATTERN.search(filename))
         is_world = '(WORLD)' in filename_upper and not is_usa
-        
+
         region_preference = 0
         if is_usa:
             region_preference = 2
@@ -90,28 +89,27 @@ class FileSelector:
 
         is_english = bool(self.LANGUAGE_PATTERN.search(filename))
         language_preference = 1 if is_english else 0
-        
+
         date_value, rev_value = self._get_revision_value(filename)
-        
+
         is_ntsc = 'NTSC' in filename_upper
         ntsc_preference = 1 if is_ntsc else 0
-        
+
         is_pal = 'PAL' in filename_upper
         pal_preference = 1 if is_pal else 0
-        
+
         return (region_preference, language_preference, date_value, rev_value, ntsc_preference, -pal_preference)
 
 
     def compare_files(self, current_best: str, new_candidate: str) -> str:
         best_tuple = self._get_comparison_tuple(current_best)
         new_tuple = self._get_comparison_tuple(new_candidate)
-        
+
         if new_tuple > best_tuple:
             return new_candidate
         return current_best
 
     def get_normalized_title(self, filename: str) -> Optional[str]:
-        # Temporarily remove disc/part info for consistent title grouping
         temp_filename = self.DISC_EXTRACTION_PATTERN.sub('', filename).strip()
 
         title_match = self.TITLE_EXTRACTION_PATTERN.search(temp_filename)
@@ -128,8 +126,7 @@ class FileSelector:
 
 
     def fetch_and_filter_file_list(self, url: str) -> Dict[str, Dict[str, str]]:
-        # Structure: Dict[normalized_title, Dict[disc_tag, best_filename]]
-        best_games: Dict[str, Dict[str, str]] = {} 
+        best_games: Dict[str, Dict[str, str]] = {}
 
         try:
             response = requests.get(url, timeout=10)
@@ -143,7 +140,7 @@ class FileSelector:
             filename = link.get('href')
             if not filename or filename.endswith('/'):
                 continue
-            
+
             filename = unquote(filename)
 
             if self.EXCLUSION_PATTERN.search(filename):
@@ -156,22 +153,20 @@ class FileSelector:
 
             if not normalized_title:
                 continue
-            
+
             disc_tag = self._get_disc_tag(filename)
-            
+
             if normalized_title not in best_games:
                 best_games[normalized_title] = {disc_tag: filename}
             else:
                 current_disc_set = best_games[normalized_title]
                 if disc_tag in current_disc_set:
-                    # Compare the current file against the existing best file for this specific disc tag
                     current_best_filename = current_disc_set[disc_tag]
                     updated_best = self.compare_files(current_best_filename, filename)
                     current_disc_set[disc_tag] = updated_best
                 else:
-                    # New disc/part for this game
                     current_disc_set[disc_tag] = filename
-        
+
         return best_games
 
     def run(self, target_urls: List[str]) -> List[str]:
@@ -179,12 +174,11 @@ class FileSelector:
 
         for url in target_urls:
             current_best_dict = self.fetch_and_filter_file_list(url)
-            
+
             for normalized_title, disc_set in current_best_dict.items():
                 if normalized_title not in all_best_games:
                     all_best_games[normalized_title] = disc_set
                 else:
-                    # Merge and compare disc sets
                     overall_disc_set = all_best_games[normalized_title]
                     for disc_tag, filename in disc_set.items():
                         if disc_tag in overall_disc_set:
@@ -196,9 +190,8 @@ class FileSelector:
 
         final_list = []
         for disc_set in all_best_games.values():
-            # Flatten the nested dictionary into a list
             final_list.extend(disc_set.values())
-        
+
         final_list.sort()
         return final_list
 
@@ -213,7 +206,7 @@ if __name__ == "__main__":
 
         for item in best_files:
             print(f"+ {item}")
-        
+
         print('- *')
 
     except Exception:
