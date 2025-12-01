@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg?style=flat)](COPYING)
 
-A set yaml controlled bash scripts for use with rclone
+A collection of yaml controlled bash scripts for use with rclone
 
 ## Requirements
 
