@@ -65,18 +65,6 @@ myrient:
       - --multi-thread-streams 0
       - --transfers 16
 
-  - name: nds
-    destination: roms/nds
-    sources:
-      - myrient:/files/No-Intro/Nintendo - Nintendo DS (Decrypted)
-      - myrient:/files/No-Intro/Nintendo - Nintendo DS (Decrypted) (Aftermarket)
-      - myrient:/files/No-Intro/Nintendo - Nintendo DS (Decrypted) (Private)
-      - myrient:/files/No-Intro/Nintendo - Nintendo DSi (Decrypted)
-    options:
-      - --checkers 32
-      - --multi-thread-streams 0
-      - --transfers 16
-
   - name: nes
     destination: roms/nes
     sources:
