@@ -1,12 +1,14 @@
-#!/usr/bin/env python
-
 import requests
 from bs4 import BeautifulSoup
 import re
 import sys
 
+# REGEX to match (USA) or (USA, *) more precisely
+USA_REGION_PATTERN = re.compile(r'\(USA[,)]', re.IGNORECASE)
+
+# FINAL CORRECTED EXCLUSION PATTERN:
 EXCLUSION_PATTERN = re.compile(
-    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased)\)|\bBIOS\b',
+    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased|Alt|Anthology)\s*\d*\)|\bBIOS\b',
     re.IGNORECASE
 )
 
@@ -27,21 +29,38 @@ def get_revision_value(filename):
         try:
             return float(rev_str)
         except ValueError:
-            return 0.0
+            return sum(float(x) / (100**i) for i, x in enumerate(rev_str.split('.')))
     return 0.0
 
-def compare_files(current_best, new_candidate):
-    is_best_usa = '(USA)' in current_best
-    is_new_usa = '(USA)' in new_candidate
-    is_best_world = '(World)' in current_best
-    is_new_world = '(World)' in new_candidate
+def is_usa_preferred(filename):
+    # NOW uses the dedicated regex pattern for greater precision
+    return bool(USA_REGION_PATTERN.search(filename))
 
-    if is_best_usa and not is_new_usa:
-        return current_best
+def is_world_preferred(filename):
+    return '(World)' in filename and not is_usa_preferred(filename)
+
+def compare_files(current_best, new_candidate):
+    is_best_usa = is_usa_preferred(current_best)
+    is_new_usa = is_usa_preferred(new_candidate)
+    
+    # Priority 1: USA-preferred version
     if is_new_usa and not is_best_usa:
         return new_candidate
+    if is_best_usa and not is_new_usa:
+        return current_best
 
-    if is_best_usa == is_new_usa and is_best_world == is_new_world:
+    # Priority 2: World-preferred version (only checked if neither is USA-preferred)
+    is_best_world = is_world_preferred(current_best)
+    is_new_world = is_world_preferred(new_candidate)
+
+    if not is_best_usa and not is_new_usa:
+        if is_new_world and not is_best_world:
+            return new_candidate
+        if is_best_world and not is_new_world:
+            return current_best
+
+    # Priority 3: Revision
+    if (is_best_usa == is_new_usa) and (is_best_world == is_new_world):
         best_rev = get_revision_value(current_best)
         new_rev = get_revision_value(new_candidate)
 
@@ -50,9 +69,36 @@ def compare_files(current_best, new_candidate):
         elif new_rev < best_rev:
             return current_best
         else:
-            return current_best if len(current_best) < len(new_candidate) else new_candidate
-
+            # Priority 4: NTSC vs PAL tie-breaker
+            is_best_ntsc = 'NTSC' in current_best.upper()
+            is_new_ntsc = 'NTSC' in new_candidate.upper()
+            is_best_pal = 'PAL' in current_best.upper()
+            is_new_pal = 'PAL' in new_candidate.upper()
+            
+            if is_new_ntsc and is_best_pal and not is_best_ntsc:
+                return new_candidate
+            if is_best_ntsc and is_new_pal and not is_new_ntsc:
+                return current_best
+            
+            # FINAL Tie-breaker: If all previous criteria are equal, keep the existing best file.
+            return current_best
+    
     return current_best
+
+def get_normalized_title(filename):
+    """Robustly extracts the game title for grouping and comparison."""
+    title_match = TITLE_EXTRACTION_PATTERN.search(filename)
+    if title_match:
+        return title_match.group(1).strip().lower()
+    
+    try:
+        title_part = filename.split('(')[0]
+        if title_part.endswith('.zip'):
+            title_part = title_part[:-4]
+        return title_part.strip().lower()
+    except:
+        return filename.split('.zip')[0].strip().lower()
+
 
 def fetch_and_filter_file_list(url):
     try:
@@ -75,18 +121,15 @@ def fetch_and_filter_file_list(url):
 
         filename = requests.utils.unquote(filename)
 
+        # 1. EXCLUSION CHECK
         if EXCLUSION_PATTERN.search(filename):
             continue
-
-        if '(USA)' not in filename and '(World)' not in filename:
+            
+        # 2. INCLUSION CHECK: Must contain (USA) or (World).
+        if not (is_usa_preferred(filename) or is_world_preferred(filename)):
             continue
 
-        title_match = TITLE_EXTRACTION_PATTERN.search(filename)
-
-        if title_match:
-            normalized_title = title_match.group(1).strip().lower()
-        else:
-            normalized_title = filename.split('(')[0].strip().lower()
+        normalized_title = get_normalized_title(filename)
 
         if not normalized_title:
             continue
@@ -112,17 +155,16 @@ if __name__ == "__main__":
     target_urls = sys.argv[1:]
     all_best_games = {}
 
+
     for url in target_urls:
         current_list = fetch_and_filter_file_list(url)
 
         for filename in current_list:
-
-            title_match = TITLE_EXTRACTION_PATTERN.search(filename)
-
-            if title_match:
-                normalized_title = title_match.group(1).strip().lower()
-            else:
-                normalized_title = filename.split('(')[0].strip().lower()
+            
+            if EXCLUSION_PATTERN.search(filename):
+                continue
+            
+            normalized_title = get_normalized_title(filename)
 
             if not normalized_title:
                 continue
@@ -138,7 +180,7 @@ if __name__ == "__main__":
     final_list = list(all_best_games.values())
     final_list.sort()
 
-    if final_list:
-        for item in final_list:
-            print(f"+ {item}")
-        print('- *')
+    for item in final_list:
+        print(f"+ {item}")
+    print('- *')
+
