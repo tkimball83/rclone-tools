@@ -7,8 +7,9 @@ import sys
 USA_REGION_PATTERN = re.compile(r'\(USA[,)]', re.IGNORECASE)
 
 # FINAL CORRECTED EXCLUSION PATTERN:
+# Added 'Virtual Console' exclusion within parenthesis group.
 EXCLUSION_PATTERN = re.compile(
-    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased|Alt|Anthology)\s*\d*\)|\bBIOS\b',
+    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased|Alt|Anthology|Virtual Console)\s*\d*\)|\bBIOS\b|\(.*Anthology.*\)',
     re.IGNORECASE
 )
 
@@ -33,7 +34,7 @@ def get_revision_value(filename):
     return 0.0
 
 def is_usa_preferred(filename):
-    # NOW uses the dedicated regex pattern for greater precision
+    # This covers (USA) and (USA, *) using the dedicated regex pattern for greater precision
     return bool(USA_REGION_PATTERN.search(filename))
 
 def is_world_preferred(filename):
@@ -183,4 +184,3 @@ if __name__ == "__main__":
     for item in final_list:
         print(f"+ {item}")
     print('- *')
-
