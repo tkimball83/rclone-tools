@@ -1,186 +1,220 @@
-import requests
-from bs4 import BeautifulSoup
 import re
 import sys
+from urllib.parse import unquote
+import requests
+from bs4 import BeautifulSoup
+from typing import List, Dict, Optional, Tuple, Union
 
-# REGEX to match (USA) or (USA, *) more precisely
-USA_REGION_PATTERN = re.compile(r'\(USA[,)]', re.IGNORECASE)
+class FileSelector:
+    USA_REGION_PATTERN = re.compile(r'[\[\(][^\]\)]*USA[^\]\)]*[\]\)]', re.IGNORECASE)
+    REVISION_EXTRACTION_PATTERN = re.compile(r'\((?:Rev|V|)\s*([\d\.]+[a-z]?)\)', re.IGNORECASE)
+    DATE_EXTRACTION_PATTERN = re.compile(r'\(\s*(\d{4}-\d{2}-\d{2})\s*\)', re.IGNORECASE)
+    TITLE_EXTRACTION_PATTERN = re.compile(r'(.+?)\s*(?:\[|\(|{)', re.IGNORECASE)
+    LANGUAGE_PATTERN = re.compile(r'[\[\(][^\]\)]*En[^\]\)]*[\]\)]', re.IGNORECASE)
+    # FIX: Added support for (N of X) format (e.g., (1 of 2))
+    DISC_EXTRACTION_PATTERN = re.compile(r'(\(\s*Disc\s+\d+\s*\))|(\(\s*Part\s+\d+\s*\))|(\(\s*\d+\s+of\s+\d+\s*\))', re.IGNORECASE)
 
-# FINAL CORRECTED EXCLUSION PATTERN:
-# Added 'Virtual Console' exclusion within parenthesis group.
-EXCLUSION_PATTERN = re.compile(
-    r'\((?:Proto|Alpha|Beta|Sample|Demo|Kiosk|Unreleased|Alt|Anthology|Virtual Console)\s*\d*\)|\bBIOS\b|\(.*Anthology.*\)',
-    re.IGNORECASE
-)
+    EXCLUSION_KEYWORDS = [
+        'Alpha', 'Alt', 'Anthology', 'Arcade', 'Beta', 'Capcom Town', 'Channel', 'Classics',
+        'Collection', 'Console', 'Debug', 'Demo', 'Digital', 'e-Reader', 'Evercade',
+        'GameCube', 'Kiosk', 'Limited', 'LodgeNet', 'Mini', 'Program', 'Proto', 'R.C.', 'Retro-Bit', 'Sample', 'Switch', 'Virtual'
+    ]
+    STANDALONE_EXCLUSION_KEYWORDS = [
+        r'\bBIOS\b'
+    ]
 
-TITLE_EXTRACTION_PATTERN = re.compile(
-    r'(.+?)\s*(?:\[|\(|{)',
-    re.IGNORECASE
-)
+    _keywords_or_group = '|'.join(EXCLUSION_KEYWORDS)
+    _parenthetical_pattern = r'\(' + r'.*' + r'(?:' + _keywords_or_group + r')' + r'.*' + r'\)'
+    _final_regex_string_inner = '|'.join([_parenthetical_pattern] + STANDALONE_EXCLUSION_KEYWORDS)
+    EXCLUSION_PATTERN = re.compile(_final_regex_string_inner, re.IGNORECASE)
 
-REVISION_EXTRACTION_PATTERN = re.compile(
-    r'\((?:Rev|V)\s*([\d\.]+)\)',
-    re.IGNORECASE
-)
+    def _get_disc_tag(self, filename: str) -> str:
+        """Extracts the Disc/Part tag, or returns 'SINGLE' if none is found."""
+        match = self.DISC_EXTRACTION_PATTERN.search(filename)
+        if match:
+            return match.group(0)
+        return 'SINGLE'
 
-def get_revision_value(filename):
-    match = REVISION_EXTRACTION_PATTERN.search(filename)
-    if match:
-        rev_str = match.group(1)
-        try:
-            return float(rev_str)
-        except ValueError:
-            return sum(float(x) / (100**i) for i, x in enumerate(rev_str.split('.')))
-    return 0.0
+    def _get_revision_value(self, filename: str) -> Tuple[float, float]:
+        date_value = 0.0
+        date_match = self.DATE_EXTRACTION_PATTERN.search(filename)
+        if date_match:
+            date_str = date_match.group(1).replace('-', '')
+            try:
+                date_value = float(date_str)
+            except ValueError:
+                pass
 
-def is_usa_preferred(filename):
-    # This covers (USA) and (USA, *) using the dedicated regex pattern for greater precision
-    return bool(USA_REGION_PATTERN.search(filename))
+        rev_value = 0.0
+        match = self.REVISION_EXTRACTION_PATTERN.search(filename)
+        if match:
+            rev_str = match.group(1)
+            
+            try:
+                parts = rev_str.split('.')
+                
+                base_number_str = parts[0]
+                decimal_part_str = ""
+                
+                if len(parts) > 1:
+                    decimal_part_str = "".join(parts[1:])
+                
+                trailing_letter_value = 0
+                if decimal_part_str and decimal_part_str[-1].isalpha():
+                    trailing_letter = decimal_part_str[-1]
+                    trailing_letter_value = (ord(trailing_letter.lower()) - ord('a') + 1) * 0.00001
+                    decimal_part_str = decimal_part_str[:-1]
 
-def is_world_preferred(filename):
-    return '(World)' in filename and not is_usa_preferred(filename)
+                
+                if decimal_part_str:
+                    rev_value = float(f"{base_number_str}.{decimal_part_str}") + trailing_letter_value
+                else:
+                    rev_value = float(base_number_str) + trailing_letter_value
 
-def compare_files(current_best, new_candidate):
-    is_best_usa = is_usa_preferred(current_best)
-    is_new_usa = is_usa_preferred(new_candidate)
-    
-    # Priority 1: USA-preferred version
-    if is_new_usa and not is_best_usa:
-        return new_candidate
-    if is_best_usa and not is_new_usa:
+            except ValueError:
+                pass
+        
+        return (date_value, rev_value)
+
+    def _get_comparison_tuple(self, filename: str) -> Tuple[int, int, float, float, int, int]:
+        filename_upper = filename.upper()
+        
+        is_usa = bool(self.USA_REGION_PATTERN.search(filename))
+        is_world = '(WORLD)' in filename_upper and not is_usa
+        
+        region_preference = 0
+        if is_usa:
+            region_preference = 2
+        elif is_world:
+            region_preference = 1
+
+        is_english = bool(self.LANGUAGE_PATTERN.search(filename))
+        language_preference = 1 if is_english else 0
+        
+        date_value, rev_value = self._get_revision_value(filename)
+        
+        is_ntsc = 'NTSC' in filename_upper
+        ntsc_preference = 1 if is_ntsc else 0
+        
+        is_pal = 'PAL' in filename_upper
+        pal_preference = 1 if is_pal else 0
+        
+        return (region_preference, language_preference, date_value, rev_value, ntsc_preference, -pal_preference)
+
+
+    def compare_files(self, current_best: str, new_candidate: str) -> str:
+        best_tuple = self._get_comparison_tuple(current_best)
+        new_tuple = self._get_comparison_tuple(new_candidate)
+        
+        if new_tuple > best_tuple:
+            return new_candidate
         return current_best
 
-    # Priority 2: World-preferred version (only checked if neither is USA-preferred)
-    is_best_world = is_world_preferred(current_best)
-    is_new_world = is_world_preferred(new_candidate)
+    def get_normalized_title(self, filename: str) -> Optional[str]:
+        # Temporarily remove disc/part info for consistent title grouping
+        temp_filename = self.DISC_EXTRACTION_PATTERN.sub('', filename).strip()
 
-    if not is_best_usa and not is_new_usa:
-        if is_new_world and not is_best_world:
-            return new_candidate
-        if is_best_world and not is_new_world:
-            return current_best
+        title_match = self.TITLE_EXTRACTION_PATTERN.search(temp_filename)
+        if title_match:
+            return title_match.group(1).strip().lower()
 
-    # Priority 3: Revision
-    if (is_best_usa == is_new_usa) and (is_best_world == is_new_world):
-        best_rev = get_revision_value(current_best)
-        new_rev = get_revision_value(new_candidate)
-
-        if new_rev > best_rev:
-            return new_candidate
-        elif new_rev < best_rev:
-            return current_best
-        else:
-            # Priority 4: NTSC vs PAL tie-breaker
-            is_best_ntsc = 'NTSC' in current_best.upper()
-            is_new_ntsc = 'NTSC' in new_candidate.upper()
-            is_best_pal = 'PAL' in current_best.upper()
-            is_new_pal = 'PAL' in new_candidate.upper()
-            
-            if is_new_ntsc and is_best_pal and not is_best_ntsc:
-                return new_candidate
-            if is_best_ntsc and is_new_pal and not is_new_ntsc:
-                return current_best
-            
-            # FINAL Tie-breaker: If all previous criteria are equal, keep the existing best file.
-            return current_best
-    
-    return current_best
-
-def get_normalized_title(filename):
-    """Robustly extracts the game title for grouping and comparison."""
-    title_match = TITLE_EXTRACTION_PATTERN.search(filename)
-    if title_match:
-        return title_match.group(1).strip().lower()
-    
-    try:
-        title_part = filename.split('(')[0]
-        if title_part.endswith('.zip'):
-            title_part = title_part[:-4]
-        return title_part.strip().lower()
-    except:
-        return filename.split('.zip')[0].strip().lower()
+        try:
+            title_part = temp_filename.split('(')[0].split('[')[0].split('{')[0]
+            if title_part.lower().endswith('.zip'):
+                title_part = title_part[:-4]
+            return title_part.strip().lower()
+        except Exception:
+            return temp_filename.split('.zip')[0].strip().lower()
 
 
-def fetch_and_filter_file_list(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-    except requests.RequestException:
-        return []
+    def fetch_and_filter_file_list(self, url: str) -> Dict[str, Dict[str, str]]:
+        # Structure: Dict[normalized_title, Dict[disc_tag, best_filename]]
+        best_games: Dict[str, Dict[str, str]] = {} 
 
-    soup = BeautifulSoup(response.content, 'html.parser')
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        except requests.RequestException:
+            return {}
 
-    best_games = {}
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-    for link in soup.find_all('a'):
-        filename = link.get('href')
-        if not filename:
-            continue
-
-        if filename.endswith('/') or filename in ('../', 'index.html'):
-            continue
-
-        filename = requests.utils.unquote(filename)
-
-        # 1. EXCLUSION CHECK
-        if EXCLUSION_PATTERN.search(filename):
-            continue
-            
-        # 2. INCLUSION CHECK: Must contain (USA) or (World).
-        if not (is_usa_preferred(filename) or is_world_preferred(filename)):
-            continue
-
-        normalized_title = get_normalized_title(filename)
-
-        if not normalized_title:
-            continue
-
-        if normalized_title in best_games:
-            current_best_filename = best_games[normalized_title]
-
-            updated_best = compare_files(current_best_filename, filename)
-            best_games[normalized_title] = updated_best
-        else:
-            best_games[normalized_title] = filename
-
-    final_list = list(best_games.values())
-    final_list.sort()
-    return final_list
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Error: Please provide at least one target URL as a command-line argument.")
-        print(f"Usage: python {sys.argv[0]} <URL_1> [URL_2] [URL_N...]")
-        sys.exit(1)
-
-    target_urls = sys.argv[1:]
-    all_best_games = {}
-
-
-    for url in target_urls:
-        current_list = fetch_and_filter_file_list(url)
-
-        for filename in current_list:
-            
-            if EXCLUSION_PATTERN.search(filename):
+        for link in soup.find_all('a'):
+            filename = link.get('href')
+            if not filename or filename.endswith('/'):
                 continue
             
-            normalized_title = get_normalized_title(filename)
+            filename = unquote(filename)
+
+            if self.EXCLUSION_PATTERN.search(filename):
+                continue
+
+            if not (self.USA_REGION_PATTERN.search(filename) or '(World)' in filename):
+                continue
+
+            normalized_title = self.get_normalized_title(filename)
 
             if not normalized_title:
                 continue
-
-            if normalized_title in all_best_games:
-                current_best_filename = all_best_games[normalized_title]
-
-                updated_best = compare_files(current_best_filename, filename)
-                all_best_games[normalized_title] = updated_best
+            
+            disc_tag = self._get_disc_tag(filename)
+            
+            if normalized_title not in best_games:
+                best_games[normalized_title] = {disc_tag: filename}
             else:
-                all_best_games[normalized_title] = filename
+                current_disc_set = best_games[normalized_title]
+                if disc_tag in current_disc_set:
+                    # Compare the current file against the existing best file for this specific disc tag
+                    current_best_filename = current_disc_set[disc_tag]
+                    updated_best = self.compare_files(current_best_filename, filename)
+                    current_disc_set[disc_tag] = updated_best
+                else:
+                    # New disc/part for this game
+                    current_disc_set[disc_tag] = filename
+        
+        return best_games
 
-    final_list = list(all_best_games.values())
-    final_list.sort()
+    def run(self, target_urls: List[str]) -> List[str]:
+        all_best_games: Dict[str, Dict[str, str]] = {}
 
-    for item in final_list:
-        print(f"+ {item}")
-    print('- *')
+        for url in target_urls:
+            current_best_dict = self.fetch_and_filter_file_list(url)
+            
+            for normalized_title, disc_set in current_best_dict.items():
+                if normalized_title not in all_best_games:
+                    all_best_games[normalized_title] = disc_set
+                else:
+                    # Merge and compare disc sets
+                    overall_disc_set = all_best_games[normalized_title]
+                    for disc_tag, filename in disc_set.items():
+                        if disc_tag in overall_disc_set:
+                            current_overall_best = overall_disc_set[disc_tag]
+                            updated_best = self.compare_files(current_overall_best, filename)
+                            overall_disc_set[disc_tag] = updated_best
+                        else:
+                            overall_disc_set[disc_tag] = filename
+
+        final_list = []
+        for disc_set in all_best_games.values():
+            # Flatten the nested dictionary into a list
+            final_list.extend(disc_set.values())
+        
+        final_list.sort()
+        return final_list
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        sys.exit(1)
+
+    try:
+        selector = FileSelector()
+        best_files = selector.run(sys.argv[1:])
+
+        for item in best_files:
+            print(f"+ {item}")
+        
+        print('- *')
+
+    except Exception:
+        sys.exit(1)
