@@ -21,17 +21,6 @@ myrient:
       - --multi-thread-streams 0
       - --transfers 16
 
-  - name: genesis
-    destination: roms/genesis
-    sources:
-      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis
-      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis (Aftermarket)
-      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis (Private)
-    options:
-      - --checkers 32
-      - --multi-thread-streams 0
-      - --transfers 16
-
   - name: gb
     destination: roms/gb
     sources:
@@ -65,12 +54,12 @@ myrient:
       - --multi-thread-streams 0
       - --transfers 16
 
-  - name: nes
-    destination: roms/nes
+  - name: genesis
+    destination: roms/genesis
     sources:
-      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered)
-      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Aftermarket)
-      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Private)
+      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis
+      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis (Aftermarket)
+      - myrient:/files/No-Intro/Sega - Mega Drive - Genesis (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
@@ -82,6 +71,17 @@ myrient:
       - myrient:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian)
       - myrient:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian) (Aftermarket)
       - myrient:/files/No-Intro/Nintendo - Nintendo 64 (BigEndian) (Private)
+    options:
+      - --checkers 32
+      - --multi-thread-streams 0
+      - --transfers 16
+
+  - name: nes
+    destination: roms/nes
+    sources:
+      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered)
+      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Aftermarket)
+      - myrient:/files/No-Intro/Nintendo - Nintendo Entertainment System (Headered) (Private)
     options:
       - --checkers 32
       - --multi-thread-streams 0
