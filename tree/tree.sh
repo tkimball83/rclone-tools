@@ -71,12 +71,12 @@ for t in $(seq 0 $((tree_length - 1))); do
 
       leaf=$(get_value "tree.${t}.branches.${b}.leafs.${l}")
 
-      echo -e "\n[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
+      echo -e "[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
 
       if [[ "${rclone_dryrun}" = true ]]; then
-        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run "${trunk}:${leaf}" "${branch}:${leaf}"
+        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run --size-only "${trunk}:${leaf}" "${branch}:${leaf}"
       else
-        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" "${trunk}:${leaf}" "${branch}:${leaf}"
+        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --size-only "${trunk}:${leaf}" "${branch}:${leaf}"
       fi
 
     done
