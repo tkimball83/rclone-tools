@@ -13,13 +13,6 @@ tree:
 
   - trunk: mega-crypt
     branches:
-      - name: filelu-crypt
-        leafs:
-          - Documents
-          - Games
-          - Music
-          - Pictures
-          - Videos
       - name: koofr-crypt
         leafs:
           - Documents
