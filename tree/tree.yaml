@@ -11,7 +11,12 @@ tree:
           - Pictures
           - Videos
 
-  - trunk: mega-crypt
+      - name: pcloud-na-crypt
+        leafs:
+          - Movies
+          - Music
+
+  - trunk: filen-crypt
     branches:
       - name: koofr-crypt
         leafs:
@@ -21,12 +26,10 @@ tree:
           - Pictures
           - Videos
 
-  - trunk: mega-crypt
+  - trunk: pcloud-na-crypt
     branches:
-      - name: pcloud-na-crypt
-        leafs:
-          - Movies
       - name: pcloud-eu-crypt
         leafs:
           - Movies
+          - Music
 ...
