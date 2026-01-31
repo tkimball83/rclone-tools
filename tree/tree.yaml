@@ -2,22 +2,8 @@
 tree:
   - trunk: mega-crypt
     branches:
+      - name: drime-crypt
       - name: filen-crypt
-        leafs:
-          - Documents
-          - Games
-          - Movies
-          - Music
-          - Pictures
-          - Videos
-
-      - name: pcloud-na-crypt
-        leafs:
-          - Movies
-          - Music
-
-  - trunk: filen-crypt
-    branches:
       - name: koofr-crypt
         leafs:
           - Documents
@@ -25,9 +11,10 @@ tree:
           - Music
           - Pictures
           - Videos
-
-  - trunk: pcloud-na-crypt
-    branches:
+      - name: pcloud-na-crypt
+        leafs:
+          - Movies
+          - Music
       - name: pcloud-eu-crypt
         leafs:
           - Movies

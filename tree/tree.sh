@@ -58,27 +58,35 @@ for t in $(seq 0 $((tree_length - 1))); do
     leaf_length=$(get_length "tree.${t}.branches.${b}.leafs")
 
     if [[ -z "${branch}" ]]; then
-      echo "WARNING: the rclone branch has no name, skipping."
+      echo "WARNING: The rclone branch has no name, skipping."
       continue
     fi
 
     if [[ -z "${leaf_length}" ]] || [[ ! "${leaf_length}" -gt 0 ]]; then
-      echo "WARNING: The rclone branch has no leafs, skipping."
-      continue
-    fi
 
-    for l in $(seq 0 $((leaf_length - 1))); do
-
-      leaf=$(get_value "tree.${t}.branches.${b}.leafs.${l}")
-
-      echo -e "[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
+      echo -e "[*]: ${trunk} -> ${branch}\n"
 
       if [[ "${rclone_dryrun}" = true ]]; then
-        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run "${trunk}:${leaf}" "${branch}:${leaf}"
+        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run --transfers 16 "${trunk}:" "${branch}:"
       else
-        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" "${trunk}:${leaf}" "${branch}:${leaf}"
+        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --transfers 16 "${trunk}:" "${branch}:"
       fi
 
-    done
+    else
+
+      for l in $(seq 0 $((leaf_length - 1))); do
+
+        leaf=$(get_value "tree.${t}.branches.${b}.leafs.${l}")
+
+        echo -e "[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
+
+        if [[ "${rclone_dryrun}" = true ]]; then
+          "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run --transfers 16 "${trunk}:${leaf}" "${branch}:${leaf}"
+        else
+          "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --transfers 16 "${trunk}:${leaf}" "${branch}:${leaf}"
+        fi
+
+      done
+    fi
   done
 done
