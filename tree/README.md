@@ -17,7 +17,7 @@ A yaml controlled bash script to sync between multiple rclone remotes
 | `-d` | `false`                   | Enable dry run execution            |
 | `-f` | `tree.yaml`               | Change path to script config yaml   |
 | `-s` | `/usr/bin/shyaml`         | Change path to shyaml binary        |
-| `-t` | `sync`                    | Change rclone transfer mechanism    |
+| `-t` | `4`                       | Change rclone transfers setting     |
 
 ## Examples
 
