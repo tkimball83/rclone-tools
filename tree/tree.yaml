@@ -1,9 +1,9 @@
 ---
 tree:
-  - trunk: mega-crypt
+  - trunk: filen-crypt
     branches:
       - name: drime-crypt
-      - name: filen-crypt
+      - name: mega-crypt
       - name: koofr-crypt
         leafs:
           - Documents

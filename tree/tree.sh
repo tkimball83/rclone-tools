@@ -1,6 +1,26 @@
 #!/usr/bin/env bash
 #
-# shellcheck disable=SC1090,SC2220
+# shellcheck disable=SC1090,SC2068,SC2220
+
+function rclone_exec() {
+  local trunk="${1}"
+  local branch="${2}"
+
+  declare -a rclone_args
+
+  rclone_args+=("--config ${RCLONE_CONFIG}")
+  rclone_args+=("--transfers ${RCLONE_TRANSFERS}")
+
+  [[ "${rclone_dryrun}" = true ]] && rclone_args+=("--dry-run")
+
+  echo -e "[*]: ${trunk} -> ${branch} (dryrun: ${rclone_dryrun-false})\n"
+
+  "${RCLONE_BIN}" sync \
+    ${rclone_args[@]} \
+    "${trunk}" "${branch}"
+
+  return 0
+}
 
 while getopts "b:c:df:s:t:" opt; do
   case $opt in
@@ -9,14 +29,14 @@ while getopts "b:c:df:s:t:" opt; do
     d) rclone_dryrun=true ;;
     f) rclone_yaml=$OPTARG ;;
     s) rclone_shyaml=$OPTARG ;;
-    t) rclone_transfer=$OPTARG ;;
+    t) rclone_transfers=$OPTARG ;;
   esac
 done
 
 RCLONE_BIN=${rclone_bin-/usr/bin/rclone}
 RCLONE_CONFIG=${rclone_config-/etc/rclone/rclone.conf}
 RCLONE_SHYAML=${rclone_shyaml-/usr/bin/shyaml}
-RCLONE_TRANSFER=${rclone_transfer-sync}
+RCLONE_TRANSFERS=${rclone_transfers-4}
 RCLONE_YAML=${rclone_yaml-tree.yaml}
 
 for opt in ${RCLONE_BIN} ${RCLONE_CONFIG} ${RCLONE_SHYAML} ${RCLONE_YAML}; do
@@ -64,27 +84,13 @@ for t in $(seq 0 $((tree_length - 1))); do
 
     if [[ -z "${leaf_length}" ]] || [[ ! "${leaf_length}" -gt 0 ]]; then
 
-      echo -e "[*]: ${trunk} -> ${branch}\n"
-
-      if [[ "${rclone_dryrun}" = true ]]; then
-        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run --transfers 16 "${trunk}:" "${branch}:"
-      else
-        "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --transfers 16 "${trunk}:" "${branch}:"
-      fi
+      rclone_exec "${trunk}:" "${branch}:"
 
     else
-
       for l in $(seq 0 $((leaf_length - 1))); do
 
         leaf=$(get_value "tree.${t}.branches.${b}.leafs.${l}")
-
-        echo -e "[*]: ${trunk}:${leaf} -> ${branch}:${leaf}\n"
-
-        if [[ "${rclone_dryrun}" = true ]]; then
-          "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --dry-run --transfers 16 "${trunk}:${leaf}" "${branch}:${leaf}"
-        else
-          "${RCLONE_BIN}" "${RCLONE_TRANSFER}" --transfers 16 "${trunk}:${leaf}" "${branch}:${leaf}"
-        fi
+        rclone_exec "${trunk}:${leaf}" "${branch}:${leaf}"
 
       done
     fi
