@@ -8,10 +8,12 @@ function rclone_exec() {
 
   declare -a rclone_args
 
-  rclone_args+=("--config ${RCLONE_CONFIG}")
-  rclone_args+=("--transfers ${RCLONE_TRANSFERS}")
+  rclone_args+=(--bwlimit "${RCLONE_BWLIMIT}")
+  rclone_args+=(--config "${RCLONE_CONFIG}")
+  rclone_args+=(--disable-http2)
+  rclone_args+=(--transfers "${RCLONE_TRANSFERS}")
 
-  [[ "${rclone_dryrun}" = true ]] && rclone_args+=("--dry-run")
+  [[ "${rclone_dryrun}" = true ]] && rclone_args+=(--dry-run)
 
   echo -e "[*]: ${trunk} -> ${branch} (dryrun: ${rclone_dryrun-false})\n"
 
@@ -28,12 +30,14 @@ while getopts "b:c:df:s:t:" opt; do
     c) rclone_config=$OPTARG ;;
     d) rclone_dryrun=true ;;
     f) rclone_yaml=$OPTARG ;;
+    l) rclone_bwlimit=$OPTARG ;;
     s) rclone_shyaml=$OPTARG ;;
     t) rclone_transfers=$OPTARG ;;
   esac
 done
 
 RCLONE_BIN=${rclone_bin-/usr/bin/rclone}
+RCLONE_BWLIMIT=${rclone_bwlimit-50M}
 RCLONE_CONFIG=${rclone_config-/etc/rclone/rclone.conf}
 RCLONE_SHYAML=${rclone_shyaml-/usr/bin/shyaml}
 RCLONE_TRANSFERS=${rclone_transfers-4}
