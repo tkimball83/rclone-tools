@@ -11,22 +11,12 @@ function output() {
 
 function output_command() {
   local -a command=("$@")
-  local index=2
-  local next
-  local positional_start=$((${#command[@]} - 2))
+  local argument
 
   output "${command[0]} ${command[1]}"
 
-  while ((index < ${#command[@]})); do
-    next=${command[index + 1]-}
-
-    if [[ "${command[index]}" == --* ]] && ((index + 1 < positional_start)) && [[ -n "${next}" && "${next}" != --* ]]; then
-      output "  ${command[index]} ${next}"
-      ((index += 2))
-    else
-      output "  ${command[index]}"
-      ((index++))
-    fi
+  for argument in "${command[@]:2}"; do
+    output "  ${argument}"
   done
 }
 
@@ -47,9 +37,13 @@ function require_command() {
   local command_path="${1}"
 
   if [[ "${command_path}" == */* ]]; then
-    [[ -x "${command_path}" ]] || fail "Unable to execute ${command_path}."
+    if [[ ! -x "${command_path}" ]]; then
+      fail "Unable to execute ${command_path}."
+    fi
   else
-    command -v "${command_path}" >/dev/null 2>&1 || fail "Unable to locate ${command_path}."
+    if ! command -v "${command_path}" >/dev/null 2>&1; then
+      fail "Unable to locate ${command_path}."
+    fi
   fi
 }
 
@@ -62,7 +56,7 @@ function require_file() {
 function resolve_rclone_config() {
   local config_path
 
-  for config_path in "${HOME}/.config/rclone/rclone.conf" /etc/rclone/rclone.conf; do
+  for config_path in "${RCLONE_CONFIG_PATHS[@]}"; do
     if [[ -f "${config_path}" ]]; then
       printf '%s\n' "${config_path}"
       return 0
@@ -106,6 +100,11 @@ SHYAML_BIN=${shyaml_bin-shyaml}
 TREE_YAML=${tree_yaml-"${SCRIPT_DIR}/tree.yaml"}
 DRY_RUN=${dry_run-false}
 
+declare -a RCLONE_CONFIG_PATHS=(
+  "${HOME}/.config/rclone/rclone.conf"
+  "/etc/rclone/rclone.conf"
+)
+
 if [[ -n "${rclone_config}" ]]; then
   RCLONE_CONFIG=${rclone_config}
 else
@@ -118,9 +117,9 @@ require_file "${RCLONE_CONFIG}"
 require_file "${TREE_YAML}"
 
 declare -a RCLONE_ARGS=(
-  --bwlimit "${RCLONE_BWLIMIT}"
-  --config "${RCLONE_CONFIG}"
-  --transfers "${RCLONE_TRANSFERS}"
+  "--bwlimit=${RCLONE_BWLIMIT}"
+  "--config=${RCLONE_CONFIG}"
+  "--transfers=${RCLONE_TRANSFERS}"
 )
 
 [[ "${DRY_RUN}" = true ]] && RCLONE_ARGS+=(--dry-run)
