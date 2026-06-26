@@ -80,12 +80,13 @@ function yaml_value() {
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-while getopts "b:c:df:l:s:t:" opt; do
+while getopts "b:c:df:k:l:s:t:" opt; do
   case $opt in
     b) rclone_bin=$OPTARG ;;
     c) rclone_config=$OPTARG ;;
     d) dry_run=true ;;
     f) tree_yaml=$OPTARG ;;
+    k) rclone_checkers=$OPTARG ;;
     l) rclone_bwlimit=$OPTARG ;;
     s) shyaml_bin=$OPTARG ;;
     t) rclone_transfers=$OPTARG ;;
@@ -95,6 +96,7 @@ done
 
 RCLONE_BIN=${rclone_bin-rclone}
 RCLONE_BWLIMIT=${rclone_bwlimit-0}
+RCLONE_CHECKERS=${rclone_checkers-8}
 RCLONE_TRANSFERS=${rclone_transfers-4}
 SHYAML_BIN=${shyaml_bin-shyaml}
 TREE_YAML=${tree_yaml-"${SCRIPT_DIR}/tree.yaml"}
@@ -118,6 +120,7 @@ require_file "${TREE_YAML}"
 
 declare -a RCLONE_ARGS=(
   "--bwlimit=${RCLONE_BWLIMIT}"
+  "--checkers=${RCLONE_CHECKERS}"
   "--config=${RCLONE_CONFIG}"
   "--transfers=${RCLONE_TRANSFERS}"
 )
