@@ -80,8 +80,9 @@ function yaml_value() {
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-while getopts "b:c:df:k:l:s:t:" opt; do
+while getopts "2b:c:df:k:l:s:t:" opt; do
   case $opt in
+    2) disable_http2=true ;;
     b) rclone_bin=$OPTARG ;;
     c) rclone_config=$OPTARG ;;
     d) dry_run=true ;;
@@ -101,6 +102,7 @@ RCLONE_TRANSFERS=${rclone_transfers-4}
 SHYAML_BIN=${shyaml_bin-shyaml}
 TREE_YAML=${tree_yaml-"${SCRIPT_DIR}/tree.yaml"}
 DRY_RUN=${dry_run-false}
+DISABLE_HTTP2=${disable_http2-false}
 
 declare -a RCLONE_CONFIG_PATHS=(
   "${HOME}/.config/rclone/rclone.conf"
@@ -126,6 +128,7 @@ declare -a RCLONE_ARGS=(
 )
 
 [[ "${DRY_RUN}" = true ]] && RCLONE_ARGS+=(--dry-run)
+[[ "${DISABLE_HTTP2}" = true ]] && RCLONE_ARGS+=(--disable-http2)
 
 tree_length=$(yaml_length tree)
 

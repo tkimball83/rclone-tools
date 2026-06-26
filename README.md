@@ -19,6 +19,7 @@ A YAML-controlled bash script to sync between multiple rclone remotes.
 
 | Flag | Default                   | Description                         |
 | ---- | ------------------------- | ----------------------------------- |
+| `-2` | `false`                   | Add rclone `--disable-http2`        |
 | `-b` | `rclone`                  | Change path to rclone binary        |
 | `-c` | `null`                    | Change path to rclone config        |
 | `-d` | `false`                   | Enable dry run and command output   |
@@ -34,6 +35,7 @@ If `-c` is not provided, the script uses the first existing config at:
 ## Examples
 
     bash tree.sh -d
+    bash tree.sh -2
     bash tree.sh -k 16
     bash tree.sh -l 100M
     bash tree.sh -b ~/.local/bin/rclone -c ~/.config/rclone/rclone.conf
